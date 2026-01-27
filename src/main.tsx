@@ -1,4 +1,4 @@
-import { StrictMode } from 'react';
+import { StrictMode, Suspense } from 'react';
 import { createRoot } from 'react-dom/client';
 import { routes } from '@/routes';
 /* global */
@@ -11,14 +11,17 @@ import { LoaderProvider } from '@/contexts/LoaderContext';
 /* components */
 import { Toaster } from '@/components/ui/sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { authService } from '@/services/auth.service';
 
 createRoot(document.getElementById('root')!).render(
     <StrictMode>
         <ThemeProvider>
             <LoaderProvider>
-                <AuthProvider>
+                <AuthProvider authService={authService}>
                     <QueryClientProvider client={new QueryClient()}>
-                        <RouterProvider router={routes} />
+                        <Suspense fallback={null}>
+                            <RouterProvider router={routes} />
+                        </Suspense>
                     </QueryClientProvider>
                 </AuthProvider>
             </LoaderProvider>

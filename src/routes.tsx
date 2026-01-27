@@ -4,10 +4,13 @@ import { ROUTES } from "@/constants/routes";
 /* layouts */
 import LayoutBase from "@/layouts/Base";
 
+import { lazy } from 'react';
+
 /* pages */
-import Index from "@/pages/Index";
-import Login from "@/pages/Login";
-import Broken from "@/pages/Broken";
+const Index         = lazy(() => import("@/pages/Index"));
+const Login         = lazy(() => import("@/pages/Login"));
+const Broken        = lazy(() => import("@/pages/Broken"));
+const PostAnalytics = lazy(() => import("@/pages/Post/Analytics"));
 
 export const routes = createBrowserRouter([
     {
@@ -22,6 +25,10 @@ export const routes = createBrowserRouter([
             {
                 path: ROUTES.LOGIN,
                 element: <Login />
+            },
+            {
+                path: ROUTES.POST_ANALYTICS,
+                element: <PostAnalytics />
             },
             {
                 path: '*',

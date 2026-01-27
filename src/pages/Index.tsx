@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Link } from "react-router-dom";
 import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
 import { ROUTES } from '@/constants/routes';
 import { User as IconUser, Home, CalendarCheck2, ListVideo, ShoppingBag, Share2, PackageCheck } from "lucide-react";
 import {
@@ -19,7 +21,19 @@ import { UserAvatar } from '@/components/User';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
-import { useApi } from '@/hooks/useApi';
+import { useLoader } from '@/hooks/useLoader';
+import { postService } from '@/services/post.service';
+import { Form, FormTextarea } from '@/components/Form';
+/* form */
+import { z } from 'zod';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+
+const createPostFormSchema = z.object({
+    content: z.string().min(5)
+});
+
+type createPostFormType = z.infer<typeof createPostFormSchema>;
 
 const asideRoutes = [
     {
@@ -53,16 +67,34 @@ const asideRoutes = [
 ]
 
 const Index = () => {
-    const api                             = useApi();
+    const { setLoading }                  = useLoader();
     const { isLogged, user }              = useAuth();
     const [ aside, setAside ]             = useState('Home');
     const [ isCreatePost, setCreatePost ] = useState(false);
+    const form                            = useForm<createPostFormType>({
+        resolver: zodResolver(createPostFormSchema),
+        defaultValues: {
+            content: ''
+        }
+    });
+    const submit = async ( data: createPostFormType ) => {
+        try {
+            setLoading(true);
+            await postService.create(data);
+            toast.success('Create post successfully');
+        } catch ( err: any ) {
+            toast.error(err.message || 'Unknow error');
+        } finally {
+            setLoading(false);
+            setCreatePost(false);
+            refetch();
+            form.reset();
+        }
+    }
 
-    const { isLoading, data: socialPosts } = useQuery({
+    const { isLoading, data: socialPosts, refetch } = useQuery({
         queryKey: ['posts'],
-        queryFn: () => {
-            return api.get('/mocks/posts.json');
-        },
+        queryFn: postService.getAll,
         staleTime: 5 * 60 * 1000,
         gcTime: 10 * 60 * 1000,
         refetchOnWindowFocus: false,
@@ -100,7 +132,10 @@ const Index = () => {
                 <div className="lg:col-span-7 space-y-4">
                     {isLogged && (
                         <div className="flex items-center gap-x-2 shadow p-2 rounded-lg">
-                            <UserAvatar className="size-9 border-2 shadow-xl" user={user} />
+                            <UserAvatar 
+                                className="size-9 border-2 shadow-xl" 
+                                user={user} 
+                            />
                             <Input 
                                 placeholder="What's happening ?" 
                                 className="h-9 bg-transparent text-xl border-none ring-0 shadow-none" 
@@ -108,11 +143,27 @@ const Index = () => {
                             />
                         </div>
                     )}
-                    {socialPosts?.data?.map(post => (
-                        <SocialPost key={post?.id} post={post} />
+                    {socialPosts?.map(post => (
+                        <SocialPost 
+                            key={post?.id} 
+                            post={post} 
+                            onDelete={async () => {
+                                try {
+                                    setLoading(true);
+                                    if (confirm('Are you sure you want to delete this post?')) {
+                                        await postService.handleDelete(post.id);
+                                        toast.success('Delete post successfully');
+                                        refetch();
+                                    }
+                                } catch (err: any) {
+                                    toast.error(err.message || 'Unknow error');
+                                } finally {
+                                    setLoading(false);
+                                }
+                            }}
+                        />
                     ))}
                 </div>
-                <div className="lg:col-span-3 bg-red-400">x</div>
             </div>
             <Dialog
                 open={isCreatePost}
@@ -125,12 +176,16 @@ const Index = () => {
                             Got something to say? Write a post and let others know what’s on your mind.
                         </DialogDescription>
                     </DialogHeader>
-                    hi
-                    <DialogFooter className="sm:justify-start">
-                        <DialogClose asChild>
-                            <Button type="button">Close</Button>
-                        </DialogClose>
-                    </DialogFooter>
+                    <Form 
+                        {...form} 
+                        onSubmit={submit}
+                    >
+                        <FormTextarea 
+                            name="content" 
+                            placeholder="What's happening ?"
+                        />
+                        <Button className="w-full">Create</Button>
+                    </Form>
                 </DialogContent>
             </Dialog>
         </>

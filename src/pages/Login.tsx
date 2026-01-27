@@ -24,9 +24,10 @@ const loginFormSchema = z.object({
 type loginFormType = z.infer<typeof loginFormSchema>;
 
 const Login = () => {
-    const navigate  = useNavigate();
-    const { login } = useAuth();
-    const form      = useForm<loginFormType>({
+    const navigate       = useNavigate();
+    const { setLoading } = useLoader();
+    const { login }      = useAuth();
+    const form           = useForm<loginFormType>({
         resolver: zodResolver(loginFormSchema),
         defaultValues: {
             username: 'hoangnguyenhd2',
@@ -35,12 +36,16 @@ const Login = () => {
     });
 
     const submit = async ( data: loginFormType ) => {
-        const response = await login<LoginResponse>(data);
-        if (response?.message) {
-            return toast.error(response.message);
+        try {
+            setLoading(true);
+            await login<LoginResponse>(data);
+            toast.success('Login successfully');
+            navigate(ROUTES.INDEX);
+        } catch ( err: any ) {
+            toast.error(err.message || 'Unknow error');
+        } finally {
+            setLoading(false);
         }
-        toast.success('Login successfully');
-        navigate(ROUTES.INDEX);
     }
 
     return (

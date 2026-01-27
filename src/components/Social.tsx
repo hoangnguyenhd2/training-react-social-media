@@ -13,8 +13,16 @@ import {
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { toast } from 'sonner';
+import type { Post } from '@/types/post';
+import { buildRoute } from '@/utils/global';
 
-export function SocialPost ({ post }) {
+export function SocialPost ({
+    post, 
+    onDelete
+}: { 
+    post: Post, 
+    onDelete: () => void 
+}) {
     const { isLogged }            = useAuth();
     const [ isLiked, setIsLiked ] = useState(false);
     return (
@@ -32,7 +40,7 @@ export function SocialPost ({ post }) {
                         <Link to={ROUTES.INDEX} className="text-slate-500 text-xs hover:underline">1m ago</Link>
                     </div>
                 </div>
-                <DropdownMenu>
+                {isLogged && (<DropdownMenu>
                     <DropdownMenuTrigger asChild>
                         <Button variant="ghost">
                             <Ellipsis />
@@ -41,14 +49,19 @@ export function SocialPost ({ post }) {
                     <DropdownMenuContent 
                         sideOffset={10}
                         align="end"
+                        className="w-52"
                     >
-                        <DropdownMenuItem>Logout</DropdownMenuItem>
+                        <DropdownMenuItem asChild>
+                            <Link to={buildRoute(ROUTES.POST_ANALYTICS, { id: post.id })}>Analytics</Link>
+                        </DropdownMenuItem>
+                        <DropdownMenuItem 
+                            className="text-red-500"
+                            onClick={onDelete}
+                        >Delete</DropdownMenuItem>
                     </DropdownMenuContent>
-                </DropdownMenu>
+                </DropdownMenu>)}
             </div>
-            <div className="p-3">
-                {post.content}
-            </div>
+            <div className="p-3 whitespace-pre-line">{post.content}</div>
             <div className="p-1.5 grid grid-cols-3 gap-1.5 border border-t-slate-500/15 [&_div]:rounded-lg">
                 <div 
                     className={cn(
