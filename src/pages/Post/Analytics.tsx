@@ -1,4 +1,3 @@
-// @ts-nocheck
 import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { postService } from '@/services/post.service';
@@ -27,8 +26,7 @@ const PostAnalytics = () => {
         }
     }, [analytics]);
 
-    // @ts-ignore
-    const columns = useMemo<ColumnDef<any>[]>(() => [
+    const columns: ColumnDef<any>[] = [
         {
             accessorKey: 'id',
             header: 'ID',
@@ -88,7 +86,7 @@ const PostAnalytics = () => {
             ),
             enableSorting: true
         }
-    ], []);
+    ];
 
     return (
         <div className="container mx-auto max-w-6xl space-y-8">
@@ -128,12 +126,11 @@ const PostAnalytics = () => {
             </div>
             <Card className="border-none shadow-lg overflow-hidden">
                 <CardContent>
-                    {/* @ts-ignore */}
-                    <DataTable
-                        data={analytics || []}
-                        columns={columns}
-                        pageSize={10}
-                    />
+                    {(DataTable as any)({
+                        data: analytics || [],
+                        columns,
+                        pageSize: 10
+                    })}
                 </CardContent>
             </Card>
         </div>
