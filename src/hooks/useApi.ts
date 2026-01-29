@@ -1,4 +1,3 @@
-import { useAuth } from "./useAuth";
 import { useLoader } from "./useLoader";
 
 type MethodOption = 'POST' | 'GET';

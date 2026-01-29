@@ -10,6 +10,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { LoaderProvider } from '@/contexts/LoaderContext';
 /* components */
 import { Toaster } from '@/components/ui/sonner';
+import { Loader } from '@/components/Loader';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { authService } from '@/services/auth.service';
 
@@ -19,7 +20,7 @@ createRoot(document.getElementById('root')!).render(
             <LoaderProvider>
                 <AuthProvider authService={authService}>
                     <QueryClientProvider client={new QueryClient()}>
-                        <Suspense fallback={null}>
+                        <Suspense fallback={<Loader />}>
                             <RouterProvider router={routes} />
                         </Suspense>
                     </QueryClientProvider>

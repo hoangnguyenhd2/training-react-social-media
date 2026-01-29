@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { 
     flexRender, 
@@ -22,7 +22,7 @@ interface DataTableProps<TData> {
     searchable?: boolean;
 }
 
-export function DataTable<TData>({ data, columns, pageSize = 15, searchable = true }: DataTableProps<TData>) {
+export const DataTable = memo(function DataTable<TData>({ data, columns, pageSize = 15, searchable = true }: DataTableProps<TData>) {
    const finalColumns: ColumnDef<TData, any>[] = columns.map(col => {
         if (col?.enableSorting) {
             const currentHeaderText = typeof col?.header === 'string' ? col.header : (col as any).accessorKey;
@@ -139,4 +139,4 @@ export function DataTable<TData>({ data, columns, pageSize = 15, searchable = tr
             </div>
         </div>
     )
-}
+} as any)

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, memo } from 'react';
 import { ROUTES } from '@/constants/routes';
 import { Link } from "react-router-dom";
 import { Button } from '@/components/ui/button';
@@ -16,7 +16,7 @@ import { toast } from 'sonner';
 import type { Post } from '@/types/post';
 import { buildRoute } from '@/utils/global';
 
-export function SocialPost ({
+export const SocialPost = memo(function SocialPost ({
     post, 
     onDelete
 }: { 
@@ -75,7 +75,7 @@ export function SocialPost ({
                         setIsLiked(!isLiked);
                     }}
                 >
-                    <ThumbsUp className="size-4" /><b>{post.count.like + isLiked}</b><span>Like</span>
+                    <ThumbsUp className="size-4" /><b>{post.count.like + (isLiked ? 1 : 0)}</b><span>Like</span>
                 </div>
                 <div className="flex items-center justify-center gap-x-1 py-2.5 text-sm hover:bg-slate-500/10">
                     <MessageCircle className="size-4" /><b>{post.count.comment}</b><span>Comment</span>
@@ -86,4 +86,4 @@ export function SocialPost ({
             </div>
         </div>
     )
-}
+})

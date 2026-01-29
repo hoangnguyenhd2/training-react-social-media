@@ -1,20 +1,16 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { Link } from "react-router-dom";
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/Textarea';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { ROUTES } from '@/constants/routes';
 import { User as IconUser, Home, CalendarCheck2, ListVideo, ShoppingBag, Share2, PackageCheck } from "lucide-react";
 import {
     Dialog,
-    DialogClose,
     DialogContent,
     DialogDescription,
-    DialogFooter,
     DialogHeader,
-    DialogTitle,
-    DialogTrigger
+    DialogTitle
 } from "@/components/ui/dialog";
 import { SocialPost } from '@/components/Social';
 import { UserAvatar } from '@/components/User';
@@ -24,7 +20,6 @@ import { useQuery } from '@tanstack/react-query';
 import { useLoader } from '@/hooks/useLoader';
 import { postService } from '@/services/post.service';
 import { Form, FormTextarea } from '@/components/Form';
-/* form */
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -35,43 +30,44 @@ const createPostFormSchema = z.object({
 
 type createPostFormType = z.infer<typeof createPostFormSchema>;
 
-const asideRoutes = [
-    {
-        text: 'Home',
-        icon: <Home className="size-5 transition-scale duration-300 group-hover:scale-115 text-black-500" />
-    },
-    {
-        text: 'Friends',
-        icon: <IconUser className="size-5 transition-scale duration-300 group-hover:scale-115 text-blue-500" />
-    },
-    {
-        text: 'Memories',
-        icon: <PackageCheck className="size-5 transition-scale duration-300 group-hover:scale-115 text-yellow-500" />
-    },
-    {
-        text: 'Saved',
-        icon: <CalendarCheck2 className="size-5 transition-scale duration-300 group-hover:scale-115 text-green-500" />
-    },
-    {
-        text: 'Group',
-        icon: <Share2 className="size-5 transition-scale duration-300 group-hover:scale-115 text-orange-500" />
-    },
-    {
-        text: 'Reels',
-        icon: <ListVideo className="size-5 transition-scale duration-300 group-hover:scale-115 text-red-500" />
-    },
-    {
-        text: 'Marketplace',
-        icon: <ShoppingBag className="size-5 transition-scale duration-300 group-hover:scale-115 text-pink-500" />
-    }
-]
-
 const Index = () => {
     const { setLoading }                  = useLoader();
     const { isLogged, user }              = useAuth();
     const [ aside, setAside ]             = useState('Home');
     const [ isCreatePost, setCreatePost ] = useState(false);
-    const form                            = useForm<createPostFormType>({
+
+    const asideRoutes = useMemo(() => [
+        {
+            text: 'Home',
+            icon: <Home className="size-5 transition-scale duration-300 group-hover:scale-115 text-black-500" />
+        },
+        {
+            text: 'Friends',
+            icon: <IconUser className="size-5 transition-scale duration-300 group-hover:scale-115 text-blue-500" />
+        },
+        {
+            text: 'Memories',
+            icon: <PackageCheck className="size-5 transition-scale duration-300 group-hover:scale-115 text-yellow-500" />
+        },
+        {
+            text: 'Saved',
+            icon: <CalendarCheck2 className="size-5 transition-scale duration-300 group-hover:scale-115 text-green-500" />
+        },
+        {
+            text: 'Group',
+            icon: <Share2 className="size-5 transition-scale duration-300 group-hover:scale-115 text-orange-500" />
+        },
+        {
+            text: 'Reels',
+            icon: <ListVideo className="size-5 transition-scale duration-300 group-hover:scale-115 text-red-500" />
+        },
+        {
+            text: 'Marketplace',
+            icon: <ShoppingBag className="size-5 transition-scale duration-300 group-hover:scale-115 text-pink-500" />
+        }
+    ], []);
+
+    const form = useForm<createPostFormType>({
         resolver: zodResolver(createPostFormSchema),
         defaultValues: {
             content: ''
@@ -92,7 +88,7 @@ const Index = () => {
         }
     }
 
-    const { isLoading, data: socialPosts, refetch } = useQuery({
+    const { data: socialPosts, refetch } = useQuery({
         queryKey: ['posts'],
         queryFn: postService.getAll,
         staleTime: 5 * 60 * 1000,
@@ -130,7 +126,7 @@ const Index = () => {
                     </ul>
                 </div>
                 <div className="lg:col-span-7 space-y-4">
-                    {isLogged && (
+                    {isLogged && user && (
                         <div className="flex items-center gap-x-2 shadow p-2 rounded-lg">
                             <UserAvatar 
                                 className="size-9 border-2 shadow-xl" 
@@ -151,7 +147,7 @@ const Index = () => {
                                 try {
                                     setLoading(true);
                                     if (confirm('Are you sure you want to delete this post?')) {
-                                        await postService.handleDelete(post.id);
+                                        await postService.handleDelete(Number(post.id));
                                         toast.success('Delete post successfully');
                                         refetch();
                                     }

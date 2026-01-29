@@ -1,5 +1,5 @@
 import { createContext, useState } from "react"
-import { Spinner } from "@/components/ui/spinner";
+import { Loader } from "@/components/Loader";
 
 interface LoaderContextProps {
     loading: boolean
@@ -13,11 +13,7 @@ export const LoaderProvider = ({ children } : { children: React.ReactNode }) => 
     return (
         <LoaderContext.Provider value={{ loading, setLoading }}>
             {children}
-            {loading && (
-                <div className="fixed inset-0 z-9999 grid place-items-center bg-muted/40">
-                    <Spinner className="size-15" />
-                </div>
-            )}
+            {loading && <Loader />}
         </LoaderContext.Provider>
     )
 }

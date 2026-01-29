@@ -39,12 +39,12 @@ export function Navbar () {
                     >
                         {theme === 'light' ? <Moon /> : <SunMoon />}
                     </Button>
-                    {isLogged ? (
+                    {isLogged && user ? (
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
                                 <Button variant="outline" className="sm:min-w-38 w-fit gap-x-2">
-                                    <UserAvatar size="sm" user={user} />
-                                    <span className="hidden sm:block">{user?.name}</span>
+                                    <UserAvatar className="size-9" user={user} />
+                                    <span className="hidden sm:block">{user.name}</span>
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent 

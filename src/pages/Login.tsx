@@ -11,7 +11,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 /* hooks */
 import { useAuth } from '@/hooks/useAuth';
 /* types */
-import { type LoginResponse } from '@/types/api';
 import { useLoader } from "@/hooks/useLoader";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
@@ -38,7 +37,7 @@ const Login = () => {
     const submit = async ( data: loginFormType ) => {
         try {
             setLoading(true);
-            await login<LoginResponse>(data);
+            await login(data);
             toast.success('Login successfully');
             navigate(ROUTES.INDEX);
         } catch ( err: any ) {

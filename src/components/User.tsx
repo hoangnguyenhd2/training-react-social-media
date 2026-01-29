@@ -1,7 +1,8 @@
+import { memo } from 'react';
 import { type User } from '@/types/user';
 import { Avatar, AvatarImage, AvatarFallback } from '@/components/ui/avatar';
 
-export const UserAvatar = ({ user, ...props } : { className: string, user: User }) => {
+export const UserAvatar = memo(({ user, ...props } : { className: string, user: User }) => {
     return (
         <Avatar {...props}>
             <AvatarImage 
@@ -11,4 +12,4 @@ export const UserAvatar = ({ user, ...props } : { className: string, user: User 
             <AvatarFallback>{user.username.slice(2).toUpperCase()}</AvatarFallback>
         </Avatar>
     )
-}
+})

@@ -21,6 +21,7 @@ export const authService = {
     },
     me: async () : Promise<User | null> => {
         await new Promise(resolve => setTimeout(resolve, 800));
-        return localStorage.getItem('token') ? mockUser : null;
+        const token = localStorage.getItem('token');
+        return (token !== mockUser?.access_token) ? null : mockUser;
     }
 }

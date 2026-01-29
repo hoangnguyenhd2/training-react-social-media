@@ -1,16 +1,15 @@
 import { createBrowserRouter } from "react-router-dom";
 import { ROUTES } from "@/constants/routes";
+import { lazy } from "react";
 
 /* layouts */
 import LayoutBase from "@/layouts/Base";
 
-import { lazy } from 'react';
-
 /* pages */
 const Index         = lazy(() => import("@/pages/Index"));
 const Login         = lazy(() => import("@/pages/Login"));
-const Broken        = lazy(() => import("@/pages/Broken"));
 const PostAnalytics = lazy(() => import("@/pages/Post/Analytics"));
+const Broken        = lazy(() => import("@/pages/Broken"));
 
 export const routes = createBrowserRouter([
     {
@@ -31,7 +30,7 @@ export const routes = createBrowserRouter([
                 element: <PostAnalytics />
             },
             {
-                path: '*',
+                path: "*",
                 element: <Broken />
             }
         ]

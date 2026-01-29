@@ -13,3 +13,7 @@ export function currencyFormat ( value: number | string ): string {
 export function capitalize ( value: string ): string {
     return value.charAt(0).toUpperCase() + value.slice(1);
 }
+
+export function numberFormat ( value: number | string ) {
+    return Number(value).toLocaleString('en-US');
+}

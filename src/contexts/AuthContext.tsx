@@ -35,8 +35,14 @@ export const AuthProvider = ({ children, authService } : { children: React.React
     }, []);
 
     const login = async ( payload: any ) => {
-        const response = await authService.login(payload);
-        setUser(response);
+        try {
+            setLoading(true);
+            const response = await authService.login(payload);
+            setUser(response);
+            return response;
+        } finally {
+            setLoading(false);
+        }
     }
 
     const logout = async () => {
