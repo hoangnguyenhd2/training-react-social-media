@@ -126,11 +126,12 @@ const PostAnalytics = () => {
             </div>
             <Card className="border-none shadow-lg overflow-hidden">
                 <CardContent>
-                    {(DataTable as any)({
-                        data: analytics || [],
-                        columns,
-                        pageSize: 10
-                    })}
+                    {/* @ts-ignore */}
+                    <DataTable
+                        data={analytics || []}
+                        columns={columns}
+                        pageSize={10}
+                    />
                 </CardContent>
             </Card>
         </div>
