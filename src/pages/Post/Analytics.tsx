@@ -18,7 +18,7 @@ const Analytics = () => {
     if (!post) {
         return (
             <div className="max-w-2xl mx-auto text-center py-20">
-                <p className="text-zinc-500">Loading...</p>
+                <p className="text-zinc-500">Loading....</p>
             </div>
         );
     }
