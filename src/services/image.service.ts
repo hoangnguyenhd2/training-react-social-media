@@ -87,17 +87,21 @@ export const imageService = {
             const result: ImgBBResponse = await response.json();
             const imageUrl              = result.data.url;
 
-            // Log to Firestore 'uploads' collection
-            const currentUser = auth.currentUser;
-            await addDoc( collection( db, "uploads" ), {
-                url: imageUrl,
-                name: file.name,
-                size: file.size,
-                type: file.type,
-                user_id: currentUser?.uid || 'anonymous',
-                provider: 'imgbb',
-                created_at: serverTimestamp()
-            });
+            // Log to Firestore 'uploads' collection (Optional - don't break the flow if permission fails)
+            try {
+                const currentUser = auth.currentUser;
+                await addDoc( collection( db, "uploads" ), {
+                    url: imageUrl,
+                    name: file.name,
+                    size: file.size,
+                    type: file.type,
+                    user_id: currentUser?.uid || 'anonymous',
+                    provider: 'imgbb',
+                    created_at: serverTimestamp()
+                });
+            } catch ( firestoreError ) {
+                console.warn( 'Firestore ' + 'uploads' + ' log failed (likely permission issue), but image upload succeeded:', firestoreError );
+            }
 
             return imageUrl;
         } catch ( error ) {
