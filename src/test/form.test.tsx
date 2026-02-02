@@ -3,7 +3,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
-import { Form, FormInput } from '@/components/Form';
+import { Form, FormInput } from '@/components/shared/Form';
 
 const loginSchema = z.object({
     username: z.string().min(5),

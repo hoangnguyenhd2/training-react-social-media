@@ -1,18 +1,16 @@
 import { Outlet, ScrollRestoration } from "react-router-dom";
-import { Navbar } from "@/components/Navbar";
+import { Navbar } from "@/components/shared/Navbar";
 
-const LayoutBase = () => {
+const Base = () => {
     return (
         <>
-            <header className="sticky top-0 z-10">
-                <Navbar />
-            </header>
-            <main className="min-h-screen layout dark md:py-[--layout-spacing] py-[calc(var(--layout-spacing)*0.5)]">
+            <Navbar />
+            <main className="min-h-screen layout py-6">
                 <Outlet />
-                <ScrollRestoration />
             </main>
+            <ScrollRestoration />
         </>
     );
 };
 
-export default LayoutBase;
+export default Base;

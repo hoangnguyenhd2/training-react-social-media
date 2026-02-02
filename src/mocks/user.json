@@ -1,9 +1,0 @@
-{
-    "id": 1,
-    "username": "hoangnguyenhd2",
-    "password": "hoangnguyenhd2",
-    "email": "hoang.nguyen.hd@hdwebsoft.dev",
-    "name": "Hoang Nguyen",
-    "avatar": "https://github.com/hoangnguyenhd2.png",
-    "access_token": "jwt-token"
-}

@@ -53,7 +53,7 @@ export const DataTable = memo(function DataTable<TData> ( { data, columns, pageS
         }
     ] );
 
-    const table = useReactTable( {
+    const table = useReactTable({
         data,
         columns: finalColumns,
         getCoreRowModel: getCoreRowModel(),
@@ -68,7 +68,7 @@ export const DataTable = memo(function DataTable<TData> ( { data, columns, pageS
             pagination,
             globalFilter: search
         }
-    } );
+    });
 
     return (
         <div className="space-y-4">

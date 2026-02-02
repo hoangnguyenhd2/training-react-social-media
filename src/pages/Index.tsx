@@ -1,191 +1,227 @@
-import { useState, useMemo } from 'react';
-import { Link } from "react-router-dom";
-import { Input } from '@/components/ui/input';
+import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { ROUTES } from '@/constants/routes';
-import { User as IconUser, Home, CalendarCheck2, ListVideo, ShoppingBag, Share2, PackageCheck } from "lucide-react";
+import { Image as ImageIcon, X } from "lucide-react";
 import {
     Dialog,
     DialogContent,
-    DialogDescription,
     DialogHeader,
     DialogTitle
 } from "@/components/ui/dialog";
-import { SocialPost } from '@/components/Social';
-import { UserAvatar } from '@/components/User';
+import { SocialPost } from '@/components/posts/Social';
+import { UserAvatar } from '@/components/users/User';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useQuery } from '@tanstack/react-query';
 import { useLoader } from '@/hooks/useLoader';
 import { postService } from '@/services/post.service';
-import { Form, FormTextarea } from '@/components/Form';
+import { imageService } from '@/services/image.service';
+import { Form, FormTextarea } from '@/components/shared/Form';
 import { z } from 'zod';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
-const createPostFormSchema = z.object({
-    content: z.string().min(5)
+const postSchema = z.object({
+    content: z.string()
 });
 
-type createPostFormType = z.infer<typeof createPostFormSchema>;
+type PostForm = z.infer<typeof postSchema>;
 
 const Index = () => {
-    const { setLoading }                  = useLoader();
-    const { isLogged, user }              = useAuth();
-    const [ aside, setAside ]             = useState('Home');
-    const [ isCreatePost, setCreatePost ] = useState(false);
+    const { setLoading } = useLoader();
+    const { isLogged, user } = useAuth();
+    const [showCreatePost, setShowCreatePost] = useState(false);
 
-    const asideRoutes = useMemo(() => [
-        {
-            text: 'Home',
-            icon: <Home className="size-5 transition-scale duration-300 group-hover:scale-115 text-black-500" />
-        },
-        {
-            text: 'Friends',
-            icon: <IconUser className="size-5 transition-scale duration-300 group-hover:scale-115 text-blue-500" />
-        },
-        {
-            text: 'Memories',
-            icon: <PackageCheck className="size-5 transition-scale duration-300 group-hover:scale-115 text-yellow-500" />
-        },
-        {
-            text: 'Saved',
-            icon: <CalendarCheck2 className="size-5 transition-scale duration-300 group-hover:scale-115 text-green-500" />
-        },
-        {
-            text: 'Group',
-            icon: <Share2 className="size-5 transition-scale duration-300 group-hover:scale-115 text-orange-500" />
-        },
-        {
-            text: 'Reels',
-            icon: <ListVideo className="size-5 transition-scale duration-300 group-hover:scale-115 text-red-500" />
-        },
-        {
-            text: 'Marketplace',
-            icon: <ShoppingBag className="size-5 transition-scale duration-300 group-hover:scale-115 text-pink-500" />
-        }
-    ], []);
-
-    const form = useForm<createPostFormType>({
-        resolver: zodResolver(createPostFormSchema),
-        defaultValues: {
-            content: ''
-        }
+    const { data: posts = [], refetch } = useQuery({
+        queryKey: ['posts'],
+        queryFn: postService.getAll
     });
-    const submit = async ( data: createPostFormType ) => {
+
+    const handleDelete = async (postId: string) => {
+        if (!confirm('Delete this post?')) return;
         try {
             setLoading(true);
-            await postService.create(data);
-            toast.success('Create post successfully');
-        } catch ( err: any ) {
-            toast.error(err.message || 'Unknow error');
+            await postService.delete(postId);
+            toast.success('Post deleted');
+            refetch();
+        } catch (err: any) {
+            toast.error(err.message || 'Error');
         } finally {
             setLoading(false);
-            setCreatePost(false);
-            refetch();
-            form.reset();
         }
-    }
-
-    const { data: socialPosts, refetch } = useQuery({
-        queryKey: ['posts'],
-        queryFn: postService.getAll,
-        staleTime: 5 * 60 * 1000,
-        gcTime: 10 * 60 * 1000,
-        refetchOnWindowFocus: false,
-        retry: false
-    });
+    };
 
     return (
-        <>
-            <div className="grid lg:grid-cols-12 gap-4">
-                <div className="lg:col-span-2">
-                    <ul className="grid max-lg:grid-cols-3 gap-2">
-                        {/* dark:bg-white dark:[&_.lucide]:text-red-600 */}
-                        {asideRoutes.map(row => (
-                            <li key={row.text}>
-                                <Link 
-                                    to={ROUTES.INDEX} 
-                                    className={cn(
-                                        'group text-sm hover:bg-muted/10 [&.active]:bg-muted/10 flex items-center gap-x-2.5 py-2.5 px-3.5 rounded-lg transition-background duration-400',
-                                        {'active': aside === row.text}
-                                    )}
-                                    onClick={e => {
-                                        e.preventDefault();
-                                        setAside(row.text);
-                                    }}
-                                >
-                                    <div className="size-5.5">
-                                        {row.icon}
-                                    </div>
-                                    <span className="text-slate-700 group-hover:text-black group-hover:font-bold group-has-[.active]:text-black group-has-[.active]:font-bold">{row.text}</span>
-                                </Link>
-                            </li>
-                        ))}
-                    </ul>
+        <div className="max-w-xl mx-auto space-y-4">
+            {isLogged && user && (
+                <div 
+                    className="bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-zinc-800 p-3 sm:p-4 rounded-xl cursor-pointer hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
+                    onClick={() => setShowCreatePost(true)}
+                >
+                    <div className="flex items-center gap-3">
+                        <UserAvatar className="size-9 sm:size-10" user={user} />
+                        <div className="flex-1 bg-zinc-100 dark:bg-zinc-800 rounded-full px-4 py-2.5 text-sm text-zinc-500">
+                            What's on your mind?
+                        </div>
+                    </div>
                 </div>
-                <div className="lg:col-span-7 space-y-4">
-                    {isLogged && user && (
-                        <div className="flex items-center gap-x-2 shadow p-2 rounded-lg">
-                            <UserAvatar 
-                                className="size-9 border-2 shadow-xl" 
-                                user={user} 
-                            />
-                            <Input 
-                                placeholder="What's happening ?" 
-                                className="h-9 bg-transparent text-xl border-none ring-0 shadow-none" 
-                                onClick={() => setCreatePost(true)}
-                            />
+            )}
+
+            {posts.length > 0 ? (
+                posts.map(post => (
+                    <SocialPost 
+                        key={post.id} 
+                        post={post} 
+                        onDelete={() => handleDelete(post.id)}
+                        onUpdate={refetch}
+                    />
+                ))
+            ) : (
+                <div className="text-center py-16 text-zinc-400">
+                    No posts yet. Be the first to post!
+                </div>
+            )}
+
+            <CreatePostDialog 
+                open={showCreatePost} 
+                onOpenChange={setShowCreatePost} 
+                onSuccess={refetch}
+            />
+        </div>
+    );
+}
+
+function CreatePostDialog({ open, onOpenChange, onSuccess }: { 
+    open: boolean;
+    onOpenChange: (v: boolean) => void;
+    onSuccess: () => void;
+}) {
+    const { setLoading } = useLoader();
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [previews, setPreviews] = useState<string[]>([]);
+    const [files, setFiles] = useState<File[]>([]);
+
+    const form = useForm<PostForm>({
+        resolver: zodResolver(postSchema),
+        defaultValues: { content: '' }
+    });
+
+    const handleFile = ( e: React.ChangeEvent<HTMLInputElement> ) => {
+        const selectedFiles = Array.from( e.target.files || [] );
+        try {
+            selectedFiles.forEach( f => imageService.validateImage( f ) );
+            if ( selectedFiles.length > 0 ) {
+                setFiles( prev => [ ...prev, ...selectedFiles ] );
+                const newPreviews = selectedFiles.map( f => URL.createObjectURL( f ) );
+                setPreviews( prev => [ ...prev, ...newPreviews ] );
+            }
+        } catch ( err: any ) {
+            toast.error( err.message );
+            if ( fileInputRef.current ) fileInputRef.current.value = '';
+        }
+    };
+
+    const removeFile = ( index: number ) => {
+        const newFiles = [ ...files ];
+        const newPreviews = [ ...previews ];
+        
+        URL.revokeObjectURL( previews[index] );
+        newFiles.splice( index, 1 );
+        newPreviews.splice( index, 1 );
+        
+        setFiles( newFiles );
+        setPreviews( newPreviews );
+    };
+
+    const clearFiles = () => {
+        files.forEach( ( _, i ) => URL.revokeObjectURL( previews[i] ) );
+        setFiles( [] );
+        setPreviews( [] );
+        if ( fileInputRef.current ) fileInputRef.current.value = '';
+    };
+
+    const submit = async ( data: PostForm ) => {
+        const content = data.content?.trim();
+        
+        if ( !content && files.length === 0 ) {
+            toast.error( 'Please provide some content or select an image.' );
+            return;
+        }
+
+        try {
+            setLoading( true );
+            await postService.create({
+                content: content || '',
+                imageFiles: files.length > 0 ? files : undefined
+            });
+            toast.success( 'Posted!' );
+            onSuccess();
+            onOpenChange( false );
+            clearFiles();
+            form.reset();
+        } catch ( err: any ) {
+            toast.error( err.message || 'Error' );
+        } finally {
+            setLoading( false );
+        }
+    };
+
+    return (
+        <Dialog open={open} onOpenChange={onOpenChange}>
+            <DialogContent className="sm:max-w-lg max-h-[90vh] overflow-y-auto">
+                <DialogHeader>
+                    <DialogTitle>Create Post</DialogTitle>
+                </DialogHeader>
+                
+                <Form {...form} onSubmit={submit}>
+                    <FormTextarea 
+                        name="content" 
+                        placeholder="What's on your mind?"
+                        className="min-h-24 border-0 focus-visible:ring-0 resize-none text-base"
+                    />
+
+                    {previews.length > 0 && (
+                        <div className={cn(
+                            "grid gap-2 mb-4",
+                            previews.length === 1 ? "grid-cols-1" : "grid-cols-2"
+                        )}>
+                            {previews.map( ( url, index ) => (
+                                <div key={url} className="relative aspect-video group">
+                                    <img 
+                                        src={url} 
+                                        className="w-full h-full object-cover rounded-lg border border-zinc-200 dark:border-zinc-800" 
+                                        alt="" 
+                                    />
+                                    <button 
+                                        type="button"
+                                        className="absolute top-2 right-2 bg-black/60 text-white rounded-full p-1.5 opacity-0 group-hover:opacity-100 transition-opacity"
+                                        onClick={() => removeFile( index )}
+                                    >
+                                        <X className="size-4" />
+                                    </button>
+                                </div>
+                            ))}
                         </div>
                     )}
-                    {socialPosts?.map(post => (
-                        <SocialPost 
-                            key={post?.id} 
-                            post={post} 
-                            onDelete={async () => {
-                                try {
-                                    setLoading(true);
-                                    if (confirm('Are you sure you want to delete this post?')) {
-                                        await postService.handleDelete(Number(post.id));
-                                        toast.success('Delete post successfully');
-                                        refetch();
-                                    }
-                                } catch (err: any) {
-                                    toast.error(err.message || 'Unknow error');
-                                } finally {
-                                    setLoading(false);
-                                }
-                            }}
+
+                    <div className="flex items-center justify-between pt-4 border-t border-zinc-100 dark:border-zinc-800">
+                        <input 
+                            type="file" 
+                            accept="image/png, image/jpeg, image/jpg" 
+                            multiple 
+                            className="hidden" 
+                            ref={fileInputRef} 
+                            onChange={handleFile} 
                         />
-                    ))}
-                </div>
-            </div>
-            <Dialog
-                open={isCreatePost}
-                onOpenChange={setCreatePost}
-            >
-                <DialogContent className="sm:max-w-xl">
-                    <DialogHeader>
-                        <DialogTitle>Create a post</DialogTitle>
-                        <DialogDescription>
-                            Got something to say? Write a post and let others know what’s on your mind.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <Form 
-                        {...form} 
-                        onSubmit={submit}
-                    >
-                        <FormTextarea 
-                            name="content" 
-                            placeholder="What's happening ?"
-                        />
-                        <Button className="w-full">Create</Button>
-                    </Form>
-                </DialogContent>
-            </Dialog>
-        </>
-    )
+                        <Button type="button" variant="ghost" size="icon" onClick={() => fileInputRef.current?.click()}>
+                            <ImageIcon className="size-5 text-green-500" />
+                        </Button>
+                        <Button type="submit" disabled={!form.formState.isValid}>Post</Button>
+                    </div>
+                </Form>
+            </DialogContent>
+        </Dialog>
+    );
 }
 
 export default Index;
