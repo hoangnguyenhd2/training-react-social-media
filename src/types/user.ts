@@ -1,10 +1,15 @@
 
+export type Role = 'admin' | 'user';
+
 export interface User {
-    id: number
+    id: string
     username: string
-    password: string
+    password?: string
     email: string
     name: string
     avatar: string
-    access_token: string
+    role: Role
+    access_token?: string
+    created_at?: Date | string | { seconds: number; nanoseconds: number }
+    updated_at?: Date | string | { seconds: number; nanoseconds: number }
 }
